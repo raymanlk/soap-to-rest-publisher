@@ -46,7 +46,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         Definitions defs = parser.parse(targetStream);
         for (PortType pt : defs.getPortTypes()) {
             for (Operation op : pt.getOperations()) {
-                list.add(op.getName().toLowerCase());
+                list.add(op.getName());
             }
         }
         return list;

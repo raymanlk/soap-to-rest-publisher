@@ -33,7 +33,7 @@ public class EndpointServiceImpl implements EndpointService{
         Definitions defs = parser.parse(wsdlUrl);
         for (PortType pt : defs.getPortTypes()) {
             for (Operation op : pt.getOperations()) {
-                list.add(op.getName().toLowerCase());
+                list.add(op.getName());
             }
         }
         return list;
