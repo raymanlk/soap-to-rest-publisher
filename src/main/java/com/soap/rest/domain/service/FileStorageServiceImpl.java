@@ -1,35 +1,37 @@
 package com.soap.rest.domain.service;
 
-import com.soap.rest.BusinessTemplateApplication;
-import com.soap.rest.domain.model.entity.FileEntity;
-import com.soap.rest.domain.repository.FileRepository;
 import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Operation;
 import com.predic8.wsdl.PortType;
 import com.predic8.wsdl.WSDLParser;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
+import com.soap.rest.domain.model.entity.FileEntity;
+import com.soap.rest.domain.repository.FileRepository;
+import com.soap.rest.external.util.Utilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 @Service
-public class FileStorageServiceImpl implements FileStorageService {
+public class FileStorageServiceImpl <T> implements FileStorageService {
+
+    Logger logger = LoggerFactory.getLogger(FileStorageServiceImpl.class);
 
     @Autowired
     private FileRepository fileRepository;
 
+    @Autowired
+    private Utilities utilities;
 
     @Override
     public FileEntity store(MultipartFile file) throws IOException {
@@ -45,82 +47,42 @@ public class FileStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public List<String> parse(String id) {
+    public ResponseEntity<List<String>> parse(String id) {
+        logger.info("[NBREQ] - id of file to parse: {}", id);
         FileEntity fileEntity = getFile(id);
         List<String> list = new ArrayList<>();
-        WSDLParser parser = new WSDLParser();
         if (fileEntity.getType().equals("text/xml")) {
             InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
-            Definitions defs = parser.parse(targetStream);
-            for (PortType pt : defs.getPortTypes()) {
-                for (Operation op : pt.getOperations()) {
-                    list.add(op.getName());
-                }
-            }
+            list = parseWsdl((T) targetStream);
         } else {
             try {
-                String wsdlFileName = "";
-                File destDir = new File(".");
-                byte[] buffer = new byte[1024];
-                InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
-                ZipInputStream zis = new ZipInputStream(targetStream);
-                ZipEntry zipEntry = zis.getNextEntry();
-                while (zipEntry != null) {
-                    File newFile = newFile(destDir, zipEntry);
-                    if (zipEntry.isDirectory()) {
-                        if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                            throw new IOException("Failed to create directory " + newFile);
-                        }
-                    } else {
-                        // fix for Windows-created archives
-                        File parent = newFile.getParentFile();
-                        if (!parent.isDirectory() && !parent.mkdirs()) {
-                            throw new IOException("Failed to create directory " + parent);
-                        }
-                        //
-                        String ext = FilenameUtils.getExtension(newFile.getName());
-                        if(ext.equals("xml")) {
-                            wsdlFileName = zipEntry.getName();
-                        }
-
-                        // write file content
-                        FileOutputStream fos = new FileOutputStream(newFile);
-                        int len;
-                        while ((len = zis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                        fos.close();
-                    }
-                    zipEntry = zis.getNextEntry();
-                }
-                zis.closeEntry();
-                zis.close();
-                InputStream xmlStream = new FileInputStream(wsdlFileName);
-                Definitions defs = parser.parse(xmlStream);
-                for (PortType pt : defs.getPortTypes()) {
-                    for (Operation op : pt.getOperations()) {
-                        list.add(op.getName());
-                    }
-                }
+                String wsdlFileName = utilities.unzip(fileEntity);
+                String filePath = "D:\\tmp\\" + wsdlFileName;
+                logger.info("File path of wsdl {}", filePath);
+                list = parseWsdl((T) filePath);
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                logger.error(e.getMessage());
             }
         }
-
-        return list;
+        logger.info("[NBRES] - List of operations {}", list);
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
-
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+    public List<String> parseWsdl(T t){
+        List<String> list = new ArrayList<>();
+        WSDLParser parser = new WSDLParser();
+        Definitions defs;
+        if (t instanceof String) {
+            defs = parser.parse((String) t);
+        } else {
+            defs = parser.parse((InputStream) t);
         }
-
-        return destFile;
+        for (PortType pt : defs.getPortTypes()) {
+            for (Operation op : pt.getOperations()) {
+                list.add(op.getName());
+            }
+        }
+        return list;
     }
 
 }

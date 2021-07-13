@@ -22,7 +22,7 @@ import static springfox.documentation.builders.PathSelectors.regex;
 public class SwaggerConfig {
     @Value("${base-url.context}")
     private String context;
-    
+
     @Value("${app.host}")
     private String host;
 
@@ -35,16 +35,18 @@ public class SwaggerConfig {
                 .build()
                 .apiInfo(apiInfo()).pathProvider(new BasePathAwareRelativePathProvider(context));
     }
+
     private ApiInfo apiInfo() {
-        String title ="Business-Template";
+        String title = "Business-Template";
         return new ApiInfo(
                 title,
-                "Welcome to MIFE REST API Integration Platform",
+                "Default description",
                 "v1.0",
                 "Terms of services",
                 new Contact("Admin", "", ""),
                 "License of API", "API license URL", Collections.emptyList());
     }
+
     class BasePathAwareRelativePathProvider extends AbstractPathProvider {
         private String basePath;
 

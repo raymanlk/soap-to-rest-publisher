@@ -1,6 +1,7 @@
 package com.soap.rest.domain.service;
 
 import com.soap.rest.domain.model.entity.FileEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -12,5 +13,5 @@ public interface FileStorageService {
 
     FileEntity getFile(String id);
 
-    List<String> parse(String id);
+    ResponseEntity<List<String>> parse(String id);
 }
