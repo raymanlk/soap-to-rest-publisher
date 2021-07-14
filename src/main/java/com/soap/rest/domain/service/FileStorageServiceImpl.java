@@ -10,6 +10,7 @@ import com.soap.rest.external.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
 
     @Autowired
     private Utilities utilities;
+
+    @Value("${destination.root-path}")
+    private String destinationPath;
 
     @Override
     public FileEntity store(MultipartFile file) throws IOException {
@@ -57,7 +61,7 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
         } else {
             try {
                 String wsdlFileName = utilities.unzip(fileEntity);
-                String filePath = "D:\\tmp\\" + wsdlFileName;
+                String filePath = destinationPath + wsdlFileName;
                 logger.info("File path of wsdl {}", filePath);
                 list = parseWsdl((T) filePath);
             } catch (Exception e) {
