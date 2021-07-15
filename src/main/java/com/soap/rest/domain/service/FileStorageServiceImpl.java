@@ -72,7 +72,7 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
-    public List<String> parseWsdl(T t){
+    private List<String> parseWsdl(T t){
         List<String> list = new ArrayList<>();
         WSDLParser parser = new WSDLParser();
         Definitions defs;
