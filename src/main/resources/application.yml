@@ -26,4 +26,4 @@ spring.jpa.show-sql: "true"
 queue:
   name: hello
 destination:
-  root-path: "D:\\tmp\\"
+  root-path: "D:\\tmp"

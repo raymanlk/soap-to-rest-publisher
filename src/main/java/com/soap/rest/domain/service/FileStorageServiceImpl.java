@@ -58,10 +58,19 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
         if (fileEntity.getType().equals("text/xml")) {
             InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
             list = parseWsdl((T) targetStream);
-        } else {
+        } else if (fileEntity.getType().equals("application/x-zip-compressed")) {
             try {
                 String wsdlFileName = utilities.unzip(fileEntity);
-                String filePath = destinationPath + wsdlFileName;
+                String filePath = destinationPath + "\\" + wsdlFileName;
+                logger.info("File path of wsdl {}", filePath);
+                list = parseWsdl((T) filePath);
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+            }
+        } else if (fileEntity.getType().equals("application/x-gzip")) {
+            try {
+                String wsdlFileName = utilities.unGzip(fileEntity);
+                String filePath = destinationPath  + "\\" + wsdlFileName;
                 logger.info("File path of wsdl {}", filePath);
                 list = parseWsdl((T) filePath);
             } catch (Exception e) {
