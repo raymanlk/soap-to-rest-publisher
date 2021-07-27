@@ -1,7 +1,6 @@
 package com.soap.rest.external.service.FactoryImpl;
 
 import com.soap.rest.domain.model.entity.FileEntity;
-import com.soap.rest.external.service.ArchiveFactory;
 import com.soap.rest.external.service.ArchiveFormat;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -15,11 +14,8 @@ import org.springframework.stereotype.Component;
 import java.io.*;
 import java.util.zip.GZIPInputStream;
 
-@Component
+@Component(value = "application/x-gzip")
 public class GZipFormat implements ArchiveFormat {
-    static {
-        ArchiveFactory.register("", GZipFormat.class);
-    }
 
     Logger logger = LoggerFactory.getLogger(GZipFormat.class);
 

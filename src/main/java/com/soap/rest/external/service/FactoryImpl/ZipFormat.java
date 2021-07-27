@@ -1,7 +1,6 @@
 package com.soap.rest.external.service.FactoryImpl;
 
 import com.soap.rest.domain.model.entity.FileEntity;
-import com.soap.rest.external.service.ArchiveFactory;
 import com.soap.rest.external.service.ArchiveFormat;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,11 +10,8 @@ import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-@Component
+@Component(value = "application/x-zip-compressed")
 public class ZipFormat implements ArchiveFormat {
-    static {
-        ArchiveFactory.register("application/x-zip-compressed", ZipFormat.class);
-    }
 
     @Value("${destination.root-path}")
     private String destinationPath;

@@ -4,16 +4,14 @@ import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Operation;
 import com.predic8.wsdl.PortType;
 import com.predic8.wsdl.WSDLParser;
+import com.soap.rest.application.config.AppContext;
 import com.soap.rest.domain.model.entity.FileEntity;
 import com.soap.rest.domain.repository.FileRepository;
-import com.soap.rest.external.service.ArchiveFactory;
 import com.soap.rest.external.service.ArchiveFormat;
-import com.soap.rest.external.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -35,7 +33,7 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
     private FileRepository fileRepository;
 
     @Autowired
-    private ApplicationContext context;
+    private AppContext context;
 
     @Value("${destination.root-path}")
     private String destinationPath;
@@ -57,30 +55,12 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
     public ResponseEntity<List<String>> parse(String id) {
         logger.info("[NBREQ] - id of file to parse: {}", id);
         FileEntity fileEntity = getFile(id);
-        List<String> list = new ArrayList<>();
+        List<String> list;
         if (fileEntity.getType().equals("text/xml")) {
             InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
             list = parseWsdl((T) targetStream);
-//        } else if (fileEntity.getType().equals("application/x-zip-compressed")) {
-//            try {
-//                String wsdlFileName = utilities.unzip(fileEntity);
-//                String filePath = destinationPath + "\\" + wsdlFileName;
-//                logger.info("File path of wsdl {}", filePath);
-//                list = parseWsdl((T) filePath);
-//            } catch (Exception e) {
-//                logger.error(e.getMessage());
-//            }
-//        } else if (fileEntity.getType().equals("application/x-gzip")) {
-//            try {
-//                String wsdlFileName = utilities.unGzip(fileEntity);
-//                String filePath = destinationPath  + "\\" + wsdlFileName;
-//                logger.info("File path of wsdl {}", filePath);
-//                list = parseWsdl((T) filePath);
-//            } catch (Exception e) {
-//                logger.error(e.getMessage());
-//            }
         } else {
-            ArchiveFormat instance = ArchiveFactory.getInstance(context, fileEntity.getType());
+            ArchiveFormat instance = AppContext.getBean(fileEntity.getType(), ArchiveFormat.class);
             String wsdlFileName = "";
             try {
                 wsdlFileName = instance.extract(fileEntity);

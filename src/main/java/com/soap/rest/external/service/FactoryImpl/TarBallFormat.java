@@ -1,7 +1,6 @@
 package com.soap.rest.external.service.FactoryImpl;
 
 import com.soap.rest.domain.model.entity.FileEntity;
-import com.soap.rest.external.service.ArchiveFactory;
 import com.soap.rest.external.service.ArchiveFormat;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -12,11 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.*;
 
-@Component
+@Component(value = "application/x-tar")
 public class TarBallFormat implements ArchiveFormat {
-    static {
-        ArchiveFactory.register("application/x-tar", TarBallFormat.class);
-    }
+
     @Value("${destination.root-path}")
     private String destinationPath;
 
@@ -26,7 +23,6 @@ public class TarBallFormat implements ArchiveFormat {
         InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
 
         String wsdlFileName = "";
-//        FileInputStream fis = new FileInputStream(tarFile);
         TarArchiveInputStream tis = new TarArchiveInputStream(targetStream);
         TarArchiveEntry tarEntry = null;
 
