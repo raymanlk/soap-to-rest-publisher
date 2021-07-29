@@ -4,9 +4,10 @@ import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Operation;
 import com.predic8.wsdl.PortType;
 import com.predic8.wsdl.WSDLParser;
+import com.soap.rest.application.config.AppContext;
 import com.soap.rest.domain.model.entity.FileEntity;
 import com.soap.rest.domain.repository.FileRepository;
-import com.soap.rest.external.util.Utilities;
+import com.soap.rest.external.service.ArchiveFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
     private FileRepository fileRepository;
 
     @Autowired
-    private Utilities utilities;
+    private AppContext context;
 
     @Value("${destination.root-path}")
     private String destinationPath;
@@ -54,19 +55,22 @@ public class FileStorageServiceImpl <T> implements FileStorageService {
     public ResponseEntity<List<String>> parse(String id) {
         logger.info("[NBREQ] - id of file to parse: {}", id);
         FileEntity fileEntity = getFile(id);
-        List<String> list = new ArrayList<>();
+        List<String> list;
         if (fileEntity.getType().equals("text/xml")) {
             InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
             list = parseWsdl((T) targetStream);
         } else {
+            ArchiveFormat instance = AppContext.getBean(fileEntity.getType(), ArchiveFormat.class);
+            String wsdlFileName = "";
             try {
-                String wsdlFileName = utilities.unzip(fileEntity);
-                String filePath = destinationPath + wsdlFileName;
-                logger.info("File path of wsdl {}", filePath);
-                list = parseWsdl((T) filePath);
-            } catch (Exception e) {
+                wsdlFileName = instance.extract(fileEntity);
+            } catch (IOException e) {
                 logger.error(e.getMessage());
             }
+            String filePath = destinationPath  + "\\" + wsdlFileName;
+            logger.info("File path of wsdl {}", filePath);
+            list = parseWsdl((T) filePath);
+
         }
         logger.info("[NBRES] - List of operations {}", list);
         return new ResponseEntity<>(list, HttpStatus.OK);

@@ -1,22 +1,25 @@
-package com.soap.rest.external.util;
+package com.soap.rest.external.service.impl;
 
 import com.soap.rest.domain.model.entity.FileEntity;
+import com.soap.rest.external.service.ArchiveFormat;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-@Component
-public class Utilities {
-    Logger logger = LoggerFactory.getLogger(Utilities.class);
+@Component(value = "application/x-zip-compressed")
+public class ZipFormat implements ArchiveFormat {
 
-    public String unzip(FileEntity fileEntity) throws IOException {
+    @Value("${destination.root-path}")
+    private String destinationPath;
+
+    @Override
+    public String extract(FileEntity fileEntity) throws IOException {
         String wsdlFileName = "";
-        File destDir = new File("D:\\tmp");
+        File destDir = new File(destinationPath);
         byte[] buffer = new byte[1024];
         InputStream targetStream = new ByteArrayInputStream(fileEntity.getData());
         ZipInputStream zis = new ZipInputStream(targetStream);
