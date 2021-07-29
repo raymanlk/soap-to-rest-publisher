@@ -1,4 +1,4 @@
-package com.soap.rest.external.service.ArchiveImpl;
+package com.soap.rest.external.service.impl;
 
 import com.soap.rest.domain.model.entity.FileEntity;
 import com.soap.rest.external.service.ArchiveFormat;

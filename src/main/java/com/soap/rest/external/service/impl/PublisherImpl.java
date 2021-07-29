@@ -1,12 +1,13 @@
-package com.soap.rest.external.service;
+package com.soap.rest.external.service.impl;
 
+import com.soap.rest.external.service.Publisher;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PublisherImpl implements Publisher{
+public class PublisherImpl implements Publisher {
 
     @Autowired
     private RabbitTemplate template;
