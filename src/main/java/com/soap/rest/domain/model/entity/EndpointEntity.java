@@ -1,6 +1,7 @@
 package com.soap.rest.domain.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.List;
@@ -21,9 +22,17 @@ public class EndpointEntity {
     @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "file_id", referencedColumnName = "id")
     private FileEntity fileEntity;
-    @OneToMany(mappedBy = "endpointEntity", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "endpointEntity", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<ControllerEntity> controllers;
+
+
+    @OneToOne(mappedBy = "endpointEntity")
+    private StatusEntity statusEntity;
+
+    @Column(name = "complete")
+    @ColumnDefault("0")
+    private int complete;
 
     public EndpointEntity() {
     }
@@ -114,5 +123,21 @@ public class EndpointEntity {
 
     public void setControllers(List<ControllerEntity> controllers) {
         this.controllers = controllers;
+    }
+
+    public StatusEntity getStatusEntity() {
+        return statusEntity;
+    }
+
+    public void setStatusEntity(StatusEntity statusEntity) {
+        this.statusEntity = statusEntity;
+    }
+
+    public int getComplete() {
+        return complete;
+    }
+
+    public void setComplete(int complete) {
+        this.complete = complete;
     }
 }
